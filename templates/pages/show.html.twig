@@ -1,0 +1,63 @@
+{% extends 'layout.html.twig' %}
+{% block body %}
+    <div class="col-xs-2">
+        <h4>Size</h4>
+        {% for modification in product.modifications %}
+            <div class="funkyradio">
+                <div class="funkyradio-success">
+                    <input type="radio" name="radio" data-url="{{ path('show_modification', {id: product.id, modificationId: modification.id}) }}" id="{{ modification.id }}" value="{{ modification.id }}" />
+                    <label for="{{ modification.id }}">{{ modification.size }} {{ modification.color }}</label>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="col-xs-12">
+            <hr>
+        </div>
+    </div>
+
+    <div class="col-xs-3">
+        <div class="block">
+            <div class="product">
+                <img src="{{ asset('/images/product.png') }}">
+            </div>
+            <div class="text-center text-info">
+                <h3>{{ product.name }}</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-xs-4">
+        <div class="info">
+            <span class="description">
+                <div id="specification" hidden="true">
+                    <h5>Specification</h5>
+                    <ul>
+                        <li id="vendoreCode"></li>
+                        <li id="color"></li>
+                        <li id="size"></li>
+                    </ul>
+                </div>
+
+                <h5>Description</h5>
+                <p>test item description</p>
+            </span>
+        </div>
+    </div>
+    <div class="col-lg-3">
+        <div class="info">
+            <div class="top-buffer">
+                <h4>Price:</h4>
+                <span class="price" id="price">
+                    {% if price is empty %}
+                        {{ product.price }}
+                    {% endif %}
+                    {{ price }}
+                </span>
+                <span>{{ product.currency }}.</span>
+            </div>
+        </div>
+        <div id="buyNow" hidden>
+            <a class="buy_now" href="#">Buy Now</a>
+        </div>
+    </div>
+{% endblock %}
