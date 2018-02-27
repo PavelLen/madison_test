@@ -162,3 +162,11 @@ table.table_admin {
 .table_admin td:hover {
     cursor: pointer;
 }
+
+/*accordion*/
+.bs-example{
+    margin: 20px;
+}
+.panel-title .glyphicon{
+    font-size: 14px;
+}

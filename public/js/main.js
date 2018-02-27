@@ -21,12 +21,21 @@ $(document).ready(function () {
         });
     });
 
-    $('#new').su('click', 'td', function() {
-        var href = $(this).find("a").attr("href");
-        console.log('sdsd');
-        if(href) {
-            window.location = href;
-        }
+    /**
+    *Add minus or plus icon for collapse element
+    */
+    $(".panel-heading a").each(function(){
+
+        $(this).on('click', function(){
+            if($(this).find('span.glyphicon').hasClass("glyphicon-plus") ){
+                $(this).find('span.glyphicon').removeClass("glyphicon-plus");
+                $(this).find('span.glyphicon').addClass("glyphicon-minus");
+            } else {
+                $(this).find('span.glyphicon').removeClass("glyphicon-minus");
+                $(this).find('span.glyphicon').addClass("glyphicon-plus");
+            }
+        });
+
     });
 
     /*$('#table_admin').on('click', 'tr', function() {

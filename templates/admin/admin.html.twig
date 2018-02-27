@@ -1,77 +1,80 @@
 {% extends 'layout.html.twig' %}
 
 {%  block body %}
-    <div id="accordion">
+
+    <div class="bs-example">
         {% for product in products %}
-            <div class="card">
-                <div class="card-header" id="product{{ product.id }}">
-                    <h5 class="mb-0">
-                        <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#product_collapse{{ product.id }}" aria-expanded="false" aria-controls="product_collapse{{ product.id }}">
-                            Наименование: {{ product.name }} Пол: {{ product.gender }} Цена по-умолчанию: {{ product.price }} {{ product.currency }} <span class="position glyphicon glyphicon-arrow-left"></span>
-                        </button>
-                    </h5>
+            <div class="panel-group">
+                <div class="panel-heading">
+                    <h4 class="panel-title">
+                        <a data-toggle="collapse" href="#modifications_{{ product.id }}"><span class="glyphicon glyphicon-plus"></span>
+                           #{{ product.id }} Наименование: {{ product.name }}; Пол: {{ product.gender }}; Цена по-умолчанию: {{ product.price }} {{ product.currency }}</a>
+                    </h4>
                 </div>
-                <div id="product_collapse{{ product.id }}" class="collapse" aria-labelledby="product{{ product.id }}" data-parent="#accordion">
-                    <div class="card-body">
-                        {#modificztions#}
-                        <div id="accordion">
-                            {% for modifications in product.modifications %}
-                                <div class="card">
-                                    <div class="card-header" id="modification{{ modifications.id }}">
-                                        <h5 class="mb-0">
-                                            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#modification_collapse{{ modifications.id }}" aria-expanded="false" aria-controls="modification_collapse{{ modifications.id }}">
-                                                Артикл: {{ modifications.vendorCode }} Размер: {{ modifications.size }} Цвет: {{ modifications.color }} <span class="position glyphicon glyphicon-arrow-left"></span>
-                                            </button>
-                                        </h5>
+                <div id="modifications_{{ product.id }}" class="panel-collapse collapse">
+                    <div class="panel-body">
+
+                        {% for modifications in product.modifications %}
+                            <div class="panel-group">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <h4 class="panel-title">
+                                            <a data-toggle="collapse" href="#price-periods_{{ modifications.id }}"><span class="glyphicon glyphicon-plus"></span>Артикл: {{ modifications.vendorCode }} Размер: {{ modifications.size }} Цвет: {{ modifications.color }}</a>
+                                        </h4>
                                     </div>
-                                    <div id="modification_collapse{{ modifications.id }}" class="collapse" aria-labelledby="modification{{ modifications.id }}" data-parent="#accordion">
-                                        <div class="card-body">
+                                    <div id="price-periods_{{ modifications.id }}" class="panel-collapse collapse">
 
-                                            {#periods#}
-                                            <table class="table table-responsive table-condensed table_admin">
-                                                <thead>
-                                                <tr>
-                                                    <th>Цена по-умолчанию</th>
-                                                    <th colspan="2">Действует от до</th>
-                                                    <th>Цена</th>
-                                                    <th></th>
+                                        <table class="table table-responsive table-condensed table_admin">
+                                            <thead>
+                                            <tr>
+                                                <th>Цена по-умолчанию</th>
+                                                <th colspan="2">Действует от до</th>
+                                                <th>Цена</th>
+                                                <th></th>
+                                            </tr>
+                                            </thead>
+                                            {% for periods in modifications.pricePeriod %}
+                                                <tbody>
+                                                <tr id="edit_period{{ periods.id }}">
+                                                    <td>{{ product.price }} {{ product.currency }}</td>
+                                                    <td id="form{{ periods.id }}">{{ periods.dateFrom|date("d/m/Y") }}</td>
+                                                    <td id="to{{ periods.id }}">{{ periods.dateTo|date("d/m/Y") }}</td>
+                                                    <td id="price{{ periods.id }}">{{ periods.price }} {{ product.currency }}</td>
+                                                    <td><button type="submit" name="edit" class="btn btn-primary" data-id="{{ periods.id }}">edit</button></td>
                                                 </tr>
-                                                </thead>
-                                                {% for periods in modifications.pricePeriod %}
-                                                    <tbody>
-                                                    <tr id="edit_period{{ periods.id }}">
-                                                        <td>{{ product.price }} {{ product.currency }}</td>
-                                                        <td id="form{{ periods.id }}">{{ periods.dateFrom|date("m/d/Y") }}</td>
-                                                        <td id="to{{ periods.id }}">{{ periods.dateTo|date("m/d/Y") }}</td>
-                                                        <td id="price{{ periods.id }}">{{ periods.price }} {{ product.currency }}</td>
-                                                        {#<td><button type="submit" name="edit" class="btn btn-primary" data-id="{{ periods.id }}">edit</button></td>#}
-                                                    </tr>
-                                                    </tbody>
-                                                {% endfor %}
-                                            </table>
-                                            <div class="text-center">
-                                                <form method="post" id="new" data-id="{{ modifications.id }}">
-                                                    <span>Укажите диапазон и цену. По-умолчанию дата начала {{ "now"|date("d/m/Y") }}</span>
-                                                    <div class="form-group">
-                                                        <label>От</label>
-                                                        <input type="date" name="startDate">
-                                                        <label>До</label>
-                                                        <input type="date" name="endDate">
-                                                        <label>Цена</label>
-                                                        <input type="number" min="0" name="price" value="0.0">
-
-                                                        <td><button type="submit" name="edit" class="btn btn-primary">Добавить</button></td>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                            {#periods#}
-
+                                                </tbody>
+                                            {% endfor %}
+                                        </table>
+                                        <div class="text-center">
+                                            <form method="post" id="new" data-id="{{ modifications.id }}">
+                                                <span>Укажите диапазон и цену. По-умолчанию дата начала {{ "now"|date("d/m/Y") }}</span>
+                                                <div class="form-group">
+                                                    <table class="table table-responsive table-condensed">
+                                                        <tr>
+                                                            <td>
+                                                                <label>От</label>
+                                                                <input type="date" name="startDate">
+                                                            </td>
+                                                            <td>
+                                                                <label>До</label>
+                                                                <input type="date" name="endDate">
+                                                            </td>
+                                                            <td>
+                                                                <label>Цена</label>
+                                                                <input type="number" min="0" name="price" value="0.0">
+                                                            </td>
+                                                            <td><button type="submit" name="edit" class="btn btn-primary">Добавить</button></td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </form>
                                         </div>
+
                                     </div>
                                 </div>
-                            {% endfor %}
-                        </div>
-                        {#modifacations#}
+                            </div>
+                        {% endfor %}
+
                     </div>
                 </div>
             </div>
