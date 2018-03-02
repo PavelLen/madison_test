@@ -1,7 +1,10 @@
 $(document).ready(function () {
+
+    /**
+     * Load modification data
+     */
     $('input[type=radio]').on('change', function() {
         var radio = $(this).val();
-        console.log(radio);
         $.ajax({
             type: "POST",
             url: $(this).data('url'),
@@ -16,7 +19,7 @@ $(document).ready(function () {
                 $('#price').text(data.price);
             },
             error: function() {
-                console.log('it broke');
+                console.log('radio (modifications) it broke');
             }
         });
     });
@@ -38,53 +41,131 @@ $(document).ready(function () {
 
     });
 
-    /*$(".btn-primary[name=submit]").on('click', function(e){
-        e.preventDefault();
-        console.log('sdf');
-    });*/
-
-    $("button").on('click', function(event){
+    /**
+     * Update old add new price period
+     */
+    $(".bs-example").on('click', '.btn', function(){
         var attr = $(this).attr('name');
+        var modificationId = $(this).attr('data-modif');
+        var pricePeriodId = $(this).attr('data-id');
+        var data;
+
         if(attr === 'edit'){
             var tdVals = $(this).parent('td').siblings('td').map(function(i, td){
                 return $(td).text();
             });
 
-            var productId = $(this).attr('data-prod');
-            var modificationId = $(this).attr('data-modif');
-            var pricePeriodId = $(this).attr('data-id');
-
-            console.log(productId, modificationId, pricePeriodId);
-
-            $('#newPeriodFrom_'+productId).val(tdVals[0]);
-            $('#newPeriodTo_'+productId).val(tdVals[1]);
-            $('#newPeriodPrice_'+productId).val(parseFloat(tdVals[2]));
-
-            $('#newPeriodForm_'+productId).submit(function (e) {
+            $('#newPeriodFrom_'+modificationId).val(tdVals[0]);
+            $('#newPeriodTo_'+modificationId).val(tdVals[1]);
+            $('#newPeriodPrice_'+modificationId).val(parseFloat(tdVals[2]));
+            $("#save_"+modificationId).attr({'name' : 'submit'});
+            $('#newPeriodForm_'+modificationId).on('submit', function (e) {
                 e.preventDefault();
-                var data = $('#newPeriodForm_'+productId).serialize()+'&'+$.param({ 'pricePeriodId' : pricePeriodId });
-                console.log(data);
-                console.log('end');
-                editPeriod(data);
-                $('form#newPeriodForm_'+productId).trigger('reset');
+                data = $('#newPeriodForm_'+modificationId).serialize()+'&'+$.param({ 'pricePeriodId' : pricePeriodId });
+                editPricePeriod(data, modificationId);
+                $('form#newPeriodForm_'+modificationId).trigger('reset');
+                $("#save_"+modificationId).attr({ 'name' : 'save'});
                 $(this).off(e);
             });
+        } else if (attr === 'save') {
+            $('#newPeriodForm_'+modificationId).on('submit', function (e) {
+                e.preventDefault();
+                data = $('#newPeriodForm_'+modificationId).serialize()+'&'+$.param({ 'modificationId' : modificationId });
+
+                addPricePeriod(data, modificationId);
+                $('form#newPeriodForm_'+modificationId).trigger('reset');
+                $(this).off(e);
+            });
+        } else if(attr === 'cancel') {
+            productId = $(this).attr('data-prod');
+            $('form#newPeriodForm_'+modificationId).trigger('reset');
+            $("#save_"+modificationId).attr({'name' : 'save'});
         }
     });
 
-    /*update old or add new price period*/
-    function editPeriod(data) {
-        var data = data;
+    /**
+     * Update old price period
+     */
+    function editPricePeriod(data, modificationId) {
         $.ajax({
             type: "POST",
             url: $(this).data('url'),
             data: data,
             success: function(data)
             {
-                $("#periodForm_"+data[0].id).html(data[0].dateFrom);
-                $("#periodTo_"+data[0].id).html(data[0].dateTo);
-                $("#periodPrice_"+data[0].id).html(data[0].price+'.00 руб');
+                if(data.error){
+                    $("#error_"+modificationId).removeAttr('hidden').text(data.error);
+                } else {
+                    $("#error_"+modificationId).hide();
+                    $("#periodForm_"+data.id).html(data.dateFrom);
+                    $("#periodTo_"+data.id).html(data.dateTo);
+                    $("#periodPrice_"+data.id).html(data.price+' руб');
+                }
+            },
+            error: function() {
+                console.log('function editPricePeriod it broke');
+            }
+
+        });
+    }
+
+    /**
+     * Add new price period
+     */
+    function addPricePeriod(data, modificationId) {
+        $.ajax({
+            type: "POST",
+            url: $(this).data('url'),
+            data: data,
+            success: function(data)
+            {
+                if(data.error){
+                    $("#error_"+modificationId).removeAttr('hidden').text(data.error);
+                } else {
+                    $("#error_"+modificationId).hide();
+                    $( "#table_"+modificationId+" tbody").append(
+                        '<tr id="edit_period_'+data.id+'">' +
+                            '<td id="periodForm_'+data.id+'">'+data.dateFrom+'</td>' +
+                            '<td id="periodTo_'+data.id+'">'+data.dateTo+'</td>' +
+                            '<td id="periodPrice_'+data.id+'">'+data.price+' руб'+'</td>' +
+                            '<td><button name="edit" type="button" class="btn btn-primary" data-id="'+data.id+'" data-modif="'+modificationId+'">edit</button></td>' +
+                        '</tr>'
+                    );
+                }
+            },
+            error: function() {
+                console.log('function addPricePeriod it broke');
             }
         });
     }
+
+    /**
+     * Delete Price Period
+     */
+    //function deletePricePeriod(){}
+
+    /**
+     * Google Charts
+     */
+   /* google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+
+    function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+            ['Year', 'Sales', 'Expenses'],
+            ['2013',  1000,      400],
+            ['2014',  1170,      460],
+            ['2015',  660,       1120],
+            ['2016',  1030,      540]
+        ]);
+
+        var options = {
+            title: 'Company Performance',
+            hAxis: {title: 'Year',  titleTextStyle: {color: '#333'}},
+            vAxis: {minValue: 0}
+        };
+
+        var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+    }*/
 });

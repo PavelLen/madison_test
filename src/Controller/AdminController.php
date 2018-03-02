@@ -25,29 +25,87 @@ class AdminController extends Controller
         $doctrine = $this->getDoctrine();
         $products = $doctrine->getRepository(Product::class)->findAll();
 
-        if (!empty($id = $request->request->get('pricePeriodId'))){
-            $newDateFrom = new \DateTime($request->request->get('newPeriodFrom').'00:00:00');
+        /**
+         * Edit Price Period
+         */
+        if (!empty($id = $request->request->get('pricePeriodId')))
+        {
+            $newDateFrom = new \DateTime($request->request->get('newPeriodFrom'));
             $newDateTo = new \DateTime($request->request->get('newPeriodTo'));
             $newPrice = trim($request->request->get('newPeriodPrice'));
+            if (empty($newPrice) || $newPrice == 0){
+                return new JsonResponse(['error' => 'Прайс не может быть нулевым']);
+            } elseif ($newDateFrom > $newDateTo){
+                return new JsonResponse(['error' => 'Дата начала выше даты окончания']);
+            } else {
+                $editPricePeriod = $doctrine->getRepository(PriceForThePeriod::class)->find($id);
 
-            $pricePeriod = $doctrine->getRepository(PriceForThePeriod::class)->find($id);
+                $editPricePeriod->setDateFrom($newDateFrom);
+                $editPricePeriod->setDateTo($newDateTo);
+                $editPricePeriod->setPrice($newPrice);
 
-            $pricePeriod->setDateFrom($newDateFrom);
-            $pricePeriod->setDateTo($newDateTo);
-            $pricePeriod->setPrice($newPrice);
+                $doctrine->getManager()->persist($editPricePeriod);
+                $doctrine->getManager()->flush();
 
-            $doctrine->getManager()->persist($pricePeriod);
-            $doctrine->getManager()->flush();
-
-            $returnArrey[] = [
-                'id' => $pricePeriod->getID(),
-                'dateFrom' => date_format($pricePeriod->getDateFrom(), 'Y-m-d'),
-                'dateTo' => date_format($pricePeriod->getDateTo(), 'Y-m-d'),
-                'price' => $pricePeriod->getPrice()
-            ];
-
-            return new JsonResponse($returnArrey);
+                $responseArrey = [
+                    'id' => $editPricePeriod->getID(),
+                    'dateFrom' => date_format($editPricePeriod->getDateFrom(), 'Y-m-d'),
+                    'dateTo' => date_format($editPricePeriod->getDateTo(), 'Y-m-d'),
+                    'price' => $editPricePeriod->getPrice()
+                ];
+                return new JsonResponse($responseArrey);
+            }
         }
+        /**
+         * New Price Period
+         */
+        elseif (!empty($id = $request->request->get('modificationId')))
+        {
+            $newDateFrom = $request->request->get('newPeriodFrom');
+            $newDateTo = $request->request->get('newPeriodTo');
+            $newPrice = trim($request->request->get('newPeriodPrice'));
+
+            if (empty($newPrice) || $newPrice == 0){
+                return new JsonResponse(['error' => 'Прайс не может быть нулевым']);
+            } elseif ($newDateFrom > $newDateTo){
+                return new JsonResponse(['error' => 'Дата начала выше даты окончания']);
+            } else {
+                if (empty($newDateFrom)){
+                    $newDateFrom = new \DateTime();
+                } else {
+                    $newDateFrom = new \DateTime($request->request->get('newPeriodFrom'));
+                }
+
+                if (empty($newDateTo)){
+                    $newDateTo = new \DateTime();
+                    $newDateTo = $newDateTo->modify('+1 day');
+                } else {
+                    $newDateTo = new \DateTime($request->request->get('newPeriodTo'));
+                }
+
+                $modification = $doctrine->getRepository(ProductModification::class)->find($id);
+
+                $newPricePeriod = new PriceForThePeriod();
+
+                $newPricePeriod->setDateFrom($newDateFrom);
+                $newPricePeriod->setDateTo($newDateTo);
+                $newPricePeriod->setPrice($newPrice);
+                $newPricePeriod->setProductPricePeriodModification($modification);
+
+                $doctrine->getManager()->persist($newPricePeriod);
+                $doctrine->getManager()->flush();
+
+                $responseArrey = [
+                    'id' => $newPricePeriod->getID(),
+                    'dateFrom' => date_format($newPricePeriod->getDateFrom(), 'Y-m-d'),
+                    'dateTo' => date_format($newPricePeriod->getDateTo(), 'Y-m-d'),
+                    'price' => $newPricePeriod->getPrice()
+                ];
+
+                return new JsonResponse($responseArrey);
+            }
+        }
+
         $content = $twig->render('admin/admin.html.twig', ['products' => $products]);
         $response = new Response();
         $response->setContent($content);

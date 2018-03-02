@@ -3,77 +3,101 @@
 {%  block body %}
 
     <div class="bs-example">
+        {#All products#}
         {% for product in products %}
             <div class="panel-group">
                 <div class="panel-heading">
                     <h4 class="panel-title">
                         <a data-toggle="collapse" href="#modifications_{{ product.id }}"><span class="glyphicon glyphicon-plus"></span>
-                           #{{ product.id }} Наименование: {{ product.name }}; Пол: {{ product.gender }}; Цена по-умолчанию: {{ product.price }} {{ product.currency }}</a>
+                           #{{ product.id }}
+                            Наименование: {{ product.name }};
+                            Пол: {{ product.gender }};
+                            Цена по-умолчанию: {{ product.price }}{{ product.currency }}
+                        </a>
                     </h4>
                 </div>
                 <div id="modifications_{{ product.id }}" class="panel-collapse collapse">
                     <div class="panel-body">
-
+                        {#All modifications for product#}
                         {% for modifications in product.modifications %}
                             <div class="panel-group">
                                 <div class="panel panel-default">
                                     <div class="panel-heading">
                                         <h4 class="panel-title">
-                                            <a data-toggle="collapse" href="#price-periods_{{ modifications.id }}"><span class="glyphicon glyphicon-plus"></span>Артикл: {{ modifications.vendorCode }} Размер: {{ modifications.size }} Цвет: {{ modifications.color }}</a>
+                                            <a data-toggle="collapse" href="#price-periods_{{ modifications.id }}">
+                                                <span class="glyphicon glyphicon-plus"></span>
+                                                Артикл: {{ modifications.vendorCode }}
+                                                Размер: {{ modifications.size }}
+                                                Цвет: {{ modifications.color }}
+                                            </a>
                                         </h4>
                                     </div>
                                     <div id="price-periods_{{ modifications.id }}" class="panel-collapse collapse">
-
-                                        <table class="table table-responsive table-condensed table_admin">
+                                        {#All price periods for modification#}
+                                        <table id="table_{{ modifications.id }}" class="table table-responsive table-condensed table_admin">
                                             <thead>
-                                            <tr>
-                                                <th colspan="2">Действует от до (год-мес-день)</th>
-                                                <th>Цена</th>
-                                                <th></th>
-                                            </tr>
-                                            </thead>
-                                            {% for periods in modifications.pricePeriod %}
-                                                <tbody>
-                                                <tr id="edit_period_{{ periods.id }}">
-                                                    <td id="periodForm_{{ periods.id }}">{{ periods.dateFrom|date("Y-m-d") }}</td>
-                                                    <td id="periodTo_{{ periods.id }}">{{ periods.dateTo|date("Y-m-d") }}</td>
-                                                    <td id="periodPrice_{{ periods.id }}">{{ periods.price }} {{ product.currency }}</td>
-                                                    <td><button name="edit" type="button" class="btn btn-primary" data-id="{{ periods.id }}"
-                                                                data-modif="{{ modifications.id }}" data-prod="{{ product.id }}">edit</button></td>
+                                                <tr>
+                                                    <th colspan="2">Действует от до (год-мес-день)</th>
+                                                    <th>Цена</th>
+                                                    <th></th>
                                                 </tr>
-                                                </tbody>
-                                            {% endfor %}
+                                            </thead>
+                                            <tbody>
+                                                {% for periods in modifications.pricePeriod %}
+                                                    <tr id="edit_period_{{ periods.id }}">
+                                                        <td id="periodForm_{{ periods.id }}">{{ periods.dateFrom|date("Y-m-d") }}</td>
+                                                        <td id="periodTo_{{ periods.id }}">{{ periods.dateTo|date("Y-m-d") }}</td>
+                                                        <td id="periodPrice_{{ periods.id }}">{{ periods.price }} {{ product.currency }}</td>
+                                                        <td><button name="edit" type="button" class="btn btn-primary"
+                                                                    data-id="{{ periods.id }}"
+                                                                    data-modif="{{ modifications.id }}">
+                                                                edit
+                                                            </button></td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
                                         </table>
+                                        {#Form for edit or add new price period#}
                                         <div class="text-center">
-                                            <form method="post" id="newPeriodForm_{{ product.id }}">
-                                                <span>Укажите диапазон и цену. По-умолчанию дата начала для нового периода {{ "now"|date("d/m/Y") }}</span>
+                                            <form method="post" id="newPeriodForm_{{ modifications.id }}">
+                                                <h5><kbd>*</kbd> Укажите диапазон и цену. По-умолчанию на 1 день, начиная с <code>{{ "now"|date("Y-m-d") }}</code>
+                                                    - <code>{{ "now"|date_modify("+1 day")|date("Y-m-d") }}</code> </h5>
+                                                <strong><code id="error_{{ modifications.id }}" hidden></code></strong>
                                                 <div class="form-group">
                                                     <table class="table table-responsive table-condensed">
                                                         <tr>
                                                             <td>
-                                                                <label for="newPeriodFrom_{{ product.id }}">От</label>
-                                                                <input name="newPeriodFrom" id="newPeriodFrom_{{ product.id }}" type="date">
+                                                                <label for="newPeriodFrom_{{ modifications.id }}">От</label>
+                                                                <input name="newPeriodFrom" id="newPeriodFrom_{{ modifications.id }}" type="date">
                                                             </td>
                                                             <td>
-                                                                <label for="newPeriodTo_{{ product.id }}">До</label>
-                                                                <input name="newPeriodTo" id="newPeriodTo_{{ product.id }}" type="date">
+                                                                <label for="newPeriodTo_{{ modifications.id }}">До</label>
+                                                                <input name="newPeriodTo" id="newPeriodTo_{{ modifications.id }}" type="date">
                                                             </td>
                                                             <td>
-                                                                <label for="newPeriodPrice_{{ product.id }}">Цена</label>
-                                                                <input name="newPeriodPrice" id="newPeriodPrice_{{ product.id }}" type="number" min="0.0" value="0.0">
+                                                                <label for="newPeriodPrice_{{ modifications.id }}">Цена</label>
+                                                                <input name="newPeriodPrice" id="newPeriodPrice_{{ modifications.id }}"
+                                                                       type="number" step="any" min="0.0" value="0.0">
                                                             </td>
-                                                            <td><button type="submit" name="save" class="btn btn-primary">Сохранить</button></td>
+                                                            <td><button id="save_{{ modifications.id }}" type="submit" name="save" class="btn btn-primary"
+                                                                        data-modif="{{ modifications.id }}">
+                                                                    Сохранить
+                                                                </button>
+                                                                <button id="cancel_{{ modifications.id }}" type="button" name="cancel" class="btn btn-primary">
+                                                                    Отмена
+                                                                </button>
+                                                            </td>
                                                         </tr>
                                                     </table>
                                                 </div>
                                             </form>
                                         </div>
+                                        {#<div id="chart_div" style="width: 100%; height: 500px;"></div>#}
 
                                     </div>
                                 </div>
                             </div>
                         {% endfor %}
-
                     </div>
                 </div>
             </div>
