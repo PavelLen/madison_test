@@ -38,47 +38,53 @@ $(document).ready(function () {
 
     });
 
-    /*$('#table_admin').on('click', 'tr', function() {
-        var id = $(this).attr('data-id');
-        $('#modifications').remove();
-        $('.position').toggle(function () {
-            $('.position').slideDown('fast').show();
-            $('.position').removeClass('glyphicon glyphicon-arrow-left').addClass('glyphicon glyphicon-arrow-down');
-        });
+    /*$(".btn-primary[name=submit]").on('click', function(e){
+        e.preventDefault();
+        console.log('sdf');
+    });*/
 
-        $('#' + id).after('<tbody id="modifications">' +
-            '<tr style="background-color:green">' +
-            '<td>vendoreCode</td>' +
-            '<td>color</td>' +
-            '<td>size</td>' +
-            '<td>prise</td>' +
-            '</tr>' +
-            '<tr>' +
-            '<td class="vendoreCode"></td>' +
-            '<td class="color"></td>' +
-            '<td class="size"></td>' +
-            '</tr>' +
-            '</tbody>');
+    $("button").on('click', function(event){
+        var attr = $(this).attr('name');
+        if(attr === 'edit'){
+            var tdVals = $(this).parent('td').siblings('td').map(function(i, td){
+                return $(td).text();
+            });
 
+            var productId = $(this).attr('data-prod');
+            var modificationId = $(this).attr('data-modif');
+            var pricePeriodId = $(this).attr('data-id');
+
+            console.log(productId, modificationId, pricePeriodId);
+
+            $('#newPeriodFrom_'+productId).val(tdVals[0]);
+            $('#newPeriodTo_'+productId).val(tdVals[1]);
+            $('#newPeriodPrice_'+productId).val(parseFloat(tdVals[2]));
+
+            $('#newPeriodForm_'+productId).submit(function (e) {
+                e.preventDefault();
+                var data = $('#newPeriodForm_'+productId).serialize()+'&'+$.param({ 'pricePeriodId' : pricePeriodId });
+                console.log(data);
+                console.log('end');
+                editPeriod(data);
+                $('form#newPeriodForm_'+productId).trigger('reset');
+                $(this).off(e);
+            });
+        }
+    });
+
+    /*update old or add new price period*/
+    function editPeriod(data) {
+        var data = data;
         $.ajax({
             type: "POST",
             url: $(this).data('url'),
-            data: {"id" : id},
-            dataType: 'json',
-            success: function(data) {
-                $('#specification').removeAttr('hidden');
-                $.each(data, function(i) {
-                    $('.vendoreCode').text(data[i].vendorCode);
-                    $('.color').text(data[i].color);
-                    $('.size').text(data[i].size);
-                    /!*$('#price').text(data.price);*!/
-                    //console.log(data[i].id);
-                })
-            },
-            error: function() {
-                console.log('it broke');
+            data: data,
+            success: function(data)
+            {
+                $("#periodForm_"+data[0].id).html(data[0].dateFrom);
+                $("#periodTo_"+data[0].id).html(data[0].dateTo);
+                $("#periodPrice_"+data[0].id).html(data[0].price+'.00 руб');
             }
         });
-    });*/
-
+    }
 });

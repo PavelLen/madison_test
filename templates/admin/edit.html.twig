@@ -1,0 +1,27 @@
+{% extends 'layout.html.twig' %}
+{% block body %}
+    <div class="text-center">
+        <form method="post" id="new" data-id="{{ modifications.id }}">
+            <span>Укажите диапазон и цену. По-умолчанию дата начала {{ "now"|date("d/m/Y") }}</span>
+            <div class="form-group">
+                <table class="table table-responsive table-condensed">
+                    <tr>
+                        <td>
+                            <label for="startDate">От</label>
+                            <input type="date" name="startDate" id="startDate">
+                        </td>
+                        <td>
+                            <label for="endDate">До</label>
+                            <input type="date" name="endDate" id="endDate">
+                        </td>
+                        <td>
+                            <label for="price">Цена</label>
+                            <input type="number" min="0" name="price" id="price" value="0.0">
+                        </td>
+                        <td><button type="submit" name="submit" class="btn btn-primary">Сохранить</button></td>
+                    </tr>
+                </table>
+            </div>
+        </form>
+    </div>
+{% endblock %}

@@ -27,43 +27,42 @@
                                         <table class="table table-responsive table-condensed table_admin">
                                             <thead>
                                             <tr>
-                                                <th>Цена по-умолчанию</th>
-                                                <th colspan="2">Действует от до</th>
+                                                <th colspan="2">Действует от до (год-мес-день)</th>
                                                 <th>Цена</th>
                                                 <th></th>
                                             </tr>
                                             </thead>
                                             {% for periods in modifications.pricePeriod %}
                                                 <tbody>
-                                                <tr id="edit_period{{ periods.id }}">
-                                                    <td>{{ product.price }} {{ product.currency }}</td>
-                                                    <td id="form{{ periods.id }}">{{ periods.dateFrom|date("d/m/Y") }}</td>
-                                                    <td id="to{{ periods.id }}">{{ periods.dateTo|date("d/m/Y") }}</td>
-                                                    <td id="price{{ periods.id }}">{{ periods.price }} {{ product.currency }}</td>
-                                                    <td><button type="submit" name="edit" class="btn btn-primary" data-id="{{ periods.id }}">edit</button></td>
+                                                <tr id="edit_period_{{ periods.id }}">
+                                                    <td id="periodForm_{{ periods.id }}">{{ periods.dateFrom|date("Y-m-d") }}</td>
+                                                    <td id="periodTo_{{ periods.id }}">{{ periods.dateTo|date("Y-m-d") }}</td>
+                                                    <td id="periodPrice_{{ periods.id }}">{{ periods.price }} {{ product.currency }}</td>
+                                                    <td><button name="edit" type="button" class="btn btn-primary" data-id="{{ periods.id }}"
+                                                                data-modif="{{ modifications.id }}" data-prod="{{ product.id }}">edit</button></td>
                                                 </tr>
                                                 </tbody>
                                             {% endfor %}
                                         </table>
                                         <div class="text-center">
-                                            <form method="post" id="new" data-id="{{ modifications.id }}">
-                                                <span>Укажите диапазон и цену. По-умолчанию дата начала {{ "now"|date("d/m/Y") }}</span>
+                                            <form method="post" id="newPeriodForm_{{ product.id }}">
+                                                <span>Укажите диапазон и цену. По-умолчанию дата начала для нового периода {{ "now"|date("d/m/Y") }}</span>
                                                 <div class="form-group">
                                                     <table class="table table-responsive table-condensed">
                                                         <tr>
                                                             <td>
-                                                                <label>От</label>
-                                                                <input type="date" name="startDate">
+                                                                <label for="newPeriodFrom_{{ product.id }}">От</label>
+                                                                <input name="newPeriodFrom" id="newPeriodFrom_{{ product.id }}" type="date">
                                                             </td>
                                                             <td>
-                                                                <label>До</label>
-                                                                <input type="date" name="endDate">
+                                                                <label for="newPeriodTo_{{ product.id }}">До</label>
+                                                                <input name="newPeriodTo" id="newPeriodTo_{{ product.id }}" type="date">
                                                             </td>
                                                             <td>
-                                                                <label>Цена</label>
-                                                                <input type="number" min="0" name="price" value="0.0">
+                                                                <label for="newPeriodPrice_{{ product.id }}">Цена</label>
+                                                                <input name="newPeriodPrice" id="newPeriodPrice_{{ product.id }}" type="number" min="0.0" value="0.0">
                                                             </td>
-                                                            <td><button type="submit" name="edit" class="btn btn-primary">Добавить</button></td>
+                                                            <td><button type="submit" name="save" class="btn btn-primary">Сохранить</button></td>
                                                         </tr>
                                                     </table>
                                                 </div>
