@@ -26,40 +26,9 @@ class AdminController extends Controller
         $products = $doctrine->getRepository(Product::class)->findAll();
 
         /**
-         * Edit Price Period
-         */
-        if (!empty($id = $request->request->get('pricePeriodId')))
-        {
-            $newDateFrom = new \DateTime($request->request->get('newPeriodFrom'));
-            $newDateTo = new \DateTime($request->request->get('newPeriodTo'));
-            $newPrice = trim($request->request->get('newPeriodPrice'));
-            if (empty($newPrice) || $newPrice == 0){
-                return new JsonResponse(['error' => 'Прайс не может быть нулевым']);
-            } elseif ($newDateFrom > $newDateTo){
-                return new JsonResponse(['error' => 'Дата начала выше даты окончания']);
-            } else {
-                $editPricePeriod = $doctrine->getRepository(PriceForThePeriod::class)->find($id);
-
-                $editPricePeriod->setDateFrom($newDateFrom);
-                $editPricePeriod->setDateTo($newDateTo);
-                $editPricePeriod->setPrice($newPrice);
-
-                $doctrine->getManager()->persist($editPricePeriod);
-                $doctrine->getManager()->flush();
-
-                $responseArrey = [
-                    'id' => $editPricePeriod->getID(),
-                    'dateFrom' => date_format($editPricePeriod->getDateFrom(), 'Y-m-d'),
-                    'dateTo' => date_format($editPricePeriod->getDateTo(), 'Y-m-d'),
-                    'price' => $editPricePeriod->getPrice()
-                ];
-                return new JsonResponse($responseArrey);
-            }
-        }
-        /**
          * New Price Period
          */
-        elseif (!empty($id = $request->request->get('modificationId')))
+        if (!empty($id = $request->request->get('newPricePeriod')))
         {
             $newDateFrom = $request->request->get('newPeriodFrom');
             $newDateTo = $request->request->get('newPeriodTo');
@@ -96,6 +65,7 @@ class AdminController extends Controller
                 $doctrine->getManager()->flush();
 
                 $responseArrey = [
+                    'action'=>"Addition of the price period was successful. Assigned to id:".$newPricePeriod->getID(),
                     'id' => $newPricePeriod->getID(),
                     'dateFrom' => date_format($newPricePeriod->getDateFrom(), 'Y-m-d'),
                     'dateTo' => date_format($newPricePeriod->getDateTo(), 'Y-m-d'),
@@ -103,6 +73,53 @@ class AdminController extends Controller
                 ];
 
                 return new JsonResponse($responseArrey);
+            }
+        }
+        /**
+         * Edit Price Period
+         */
+        elseif (!empty($id = $request->request->get('editPricePeriodId')))
+        {
+            $newDateFrom = new \DateTime($request->request->get('newPeriodFrom'));
+            $newDateTo = new \DateTime($request->request->get('newPeriodTo'));
+            $newPrice = trim($request->request->get('newPeriodPrice'));
+            if (empty($newPrice) || $newPrice == 0){
+                return new JsonResponse(['error' => 'Прайс не может быть нулевым']);
+            } elseif ($newDateFrom > $newDateTo){
+                return new JsonResponse(['error' => 'Дата начала выше даты окончания']);
+            } else {
+                $editPricePeriod = $doctrine->getRepository(PriceForThePeriod::class)->find($id);
+
+                $editPricePeriod->setDateFrom($newDateFrom);
+                $editPricePeriod->setDateTo($newDateTo);
+                $editPricePeriod->setPrice($newPrice);
+
+                $doctrine->getManager()->persist($editPricePeriod);
+                $doctrine->getManager()->flush();
+
+                $responseArrey = [
+                    'action'=>"Changes in the price period with id:$id were successful",
+                    'id' => $editPricePeriod->getID(),
+                    'dateFrom' => date_format($editPricePeriod->getDateFrom(), 'Y-m-d'),
+                    'dateTo' => date_format($editPricePeriod->getDateTo(), 'Y-m-d'),
+                    'price' => $editPricePeriod->getPrice()
+                ];
+                return new JsonResponse($responseArrey);
+            }
+        /**
+         * Delete Price Period
+         */
+        } elseif (!empty($id = $request->request->get('deletePricePeriodId')))
+        {
+            $deletePricePeriod = $doctrine->getRepository(PriceForThePeriod::class)->find($id);
+            if($deletePricePeriod){
+                $em = $this->getDoctrine()->getManager();
+                $em->remove($deletePricePeriod);
+                $em->flush();
+
+                return new JsonResponse(['action'=>"Removing the price period with the id:$id was successful", 'id'=>$id]);
+            } else {
+                return new JsonResponse(['error' => "No price period found for id.$id"]);
             }
         }
 

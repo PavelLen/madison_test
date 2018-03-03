@@ -42,7 +42,7 @@ $(document).ready(function () {
     });
 
     /**
-     * Update old add new price period
+     * Edit, new, delete price period
      */
     $(".bs-example").on('click', '.btn', function(){
         var attr = $(this).attr('name');
@@ -50,7 +50,23 @@ $(document).ready(function () {
         var pricePeriodId = $(this).attr('data-id');
         var data;
 
-        if(attr === 'edit'){
+        /**
+         * New Price Period
+         */
+        if (attr === 'save') {
+            $('#newPeriodForm_'+modificationId).on('submit', function (e) {
+                e.preventDefault();
+                data = $('#newPeriodForm_'+modificationId).serialize()+'&'+$.param({ 'newPricePeriod' : modificationId });
+
+                addPricePeriod(data, modificationId);
+                $('form#newPeriodForm_'+modificationId).trigger('reset');
+                $(this).off(e);
+            });
+        }
+        /**
+         * Edit Price Period
+         */
+        else if(attr === 'edit'){
             var tdVals = $(this).parent('td').siblings('td').map(function(i, td){
                 return $(td).text();
             });
@@ -61,53 +77,31 @@ $(document).ready(function () {
             $("#save_"+modificationId).attr({'name' : 'submit'});
             $('#newPeriodForm_'+modificationId).on('submit', function (e) {
                 e.preventDefault();
-                data = $('#newPeriodForm_'+modificationId).serialize()+'&'+$.param({ 'pricePeriodId' : pricePeriodId });
+                data = $('#newPeriodForm_'+modificationId).serialize()+'&'+$.param({ 'editPricePeriodId' : pricePeriodId });
                 editPricePeriod(data, modificationId);
                 $('form#newPeriodForm_'+modificationId).trigger('reset');
                 $("#save_"+modificationId).attr({ 'name' : 'save'});
                 $(this).off(e);
             });
-        } else if (attr === 'save') {
-            $('#newPeriodForm_'+modificationId).on('submit', function (e) {
-                e.preventDefault();
-                data = $('#newPeriodForm_'+modificationId).serialize()+'&'+$.param({ 'modificationId' : modificationId });
+        }
+        /**
+         * Delete Price Period
+         */
+        else if (attr === 'delete') {
 
-                addPricePeriod(data, modificationId);
-                $('form#newPeriodForm_'+modificationId).trigger('reset');
-                $(this).off(e);
-            });
-        } else if(attr === 'cancel') {
+            data = $.param({ 'deletePricePeriodId' : pricePeriodId });
+            deletePricePeriod(data);
+            $('form#newPeriodForm_'+modificationId).trigger('reset');
+        }
+        /**
+         * Clear form
+         */
+        else if(attr === 'cancel') {
             productId = $(this).attr('data-prod');
             $('form#newPeriodForm_'+modificationId).trigger('reset');
             $("#save_"+modificationId).attr({'name' : 'save'});
         }
     });
-
-    /**
-     * Update old price period
-     */
-    function editPricePeriod(data, modificationId) {
-        $.ajax({
-            type: "POST",
-            url: $(this).data('url'),
-            data: data,
-            success: function(data)
-            {
-                if(data.error){
-                    $("#error_"+modificationId).removeAttr('hidden').text(data.error);
-                } else {
-                    $("#error_"+modificationId).hide();
-                    $("#periodForm_"+data.id).html(data.dateFrom);
-                    $("#periodTo_"+data.id).html(data.dateTo);
-                    $("#periodPrice_"+data.id).html(data.price+' руб');
-                }
-            },
-            error: function() {
-                console.log('function editPricePeriod it broke');
-            }
-
-        });
-    }
 
     /**
      * Add new price period
@@ -122,13 +116,17 @@ $(document).ready(function () {
                 if(data.error){
                     $("#error_"+modificationId).removeAttr('hidden').text(data.error);
                 } else {
+                    console.log(data.action);
                     $("#error_"+modificationId).hide();
                     $( "#table_"+modificationId+" tbody").append(
                         '<tr id="edit_period_'+data.id+'">' +
                             '<td id="periodForm_'+data.id+'">'+data.dateFrom+'</td>' +
                             '<td id="periodTo_'+data.id+'">'+data.dateTo+'</td>' +
                             '<td id="periodPrice_'+data.id+'">'+data.price+' руб'+'</td>' +
-                            '<td><button name="edit" type="button" class="btn btn-primary" data-id="'+data.id+'" data-modif="'+modificationId+'">edit</button></td>' +
+                            '<td>' +
+                                '<button name="edit" type="button" class="btn btn-primary" data-id="'+data.id+'" data-modif="'+modificationId+'">edit</button>' +
+                                '<button style="margin-left: 25px;" name="delete" type="button" class="btn btn-danger" data-id="'+data.id+'">delete</button>' +
+                            '</td>' +
                         '</tr>'
                     );
                 }
@@ -140,9 +138,50 @@ $(document).ready(function () {
     }
 
     /**
+     * Edit price period
+     */
+    function editPricePeriod(data, modificationId) {
+        $.ajax({
+            type: "POST",
+            url: $(this).data('url'),
+            data: data,
+            success: function(data)
+            {
+                if(data.error){
+                    $("#error_"+modificationId).removeAttr('hidden').text(data.error);
+                } else {
+                    console.log(data.action);
+                    $("#error_"+modificationId).hide();
+                    $("#periodForm_"+data.id).html(data.dateFrom);
+                    $("#periodTo_"+data.id).html(data.dateTo);
+                    $("#periodPrice_"+data.id).html(data.price+' руб');
+                }
+            },
+            error: function() {
+                console.log('function editPricePeriod it broke');
+            }
+
+        });
+    }
+
+    /**
      * Delete Price Period
      */
-    //function deletePricePeriod(){}
+    function deletePricePeriod(data){
+        $.ajax({
+            type: "POST",
+            url: $(this).data('url'),
+            data: data,
+            success: function(data)
+            {
+                console.log(data.action);
+                $('#edit_period_'+data.id).remove();
+            },
+            error: function(data) {
+                console.log('function deletePricePeriod it broke'+data);
+            }
+        });
+    }
 
     /**
      * Google Charts

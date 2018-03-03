@@ -48,11 +48,17 @@
                                                         <td id="periodForm_{{ periods.id }}">{{ periods.dateFrom|date("Y-m-d") }}</td>
                                                         <td id="periodTo_{{ periods.id }}">{{ periods.dateTo|date("Y-m-d") }}</td>
                                                         <td id="periodPrice_{{ periods.id }}">{{ periods.price }} {{ product.currency }}</td>
-                                                        <td><button name="edit" type="button" class="btn btn-primary"
+                                                        <td>
+                                                            <button name="edit" type="button" class="btn btn-primary"
                                                                     data-id="{{ periods.id }}"
                                                                     data-modif="{{ modifications.id }}">
                                                                 edit
-                                                            </button></td>
+                                                            </button>
+                                                            <button style="margin-left: 25px;" name="delete" type="button" class="btn btn-danger"
+                                                                    data-id="{{ periods.id }}">
+                                                                delete
+                                                            </button>
+                                                        </td>
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -79,7 +85,7 @@
                                                                 <input name="newPeriodPrice" id="newPeriodPrice_{{ modifications.id }}"
                                                                        type="number" step="any" min="0.0" value="0.0">
                                                             </td>
-                                                            <td><button id="save_{{ modifications.id }}" type="submit" name="save" class="btn btn-primary"
+                                                            <td><button id="save_{{ modifications.id }}" type="submit" name="save" class="btn btn-success"
                                                                         data-modif="{{ modifications.id }}">
                                                                     Сохранить
                                                                 </button>
